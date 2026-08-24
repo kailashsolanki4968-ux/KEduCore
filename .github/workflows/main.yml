@@ -11,42 +11,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Extract Android project
         run: |
           unzip -q keducore.zip -d project
 
-      - name: Find Gradle wrapper
-        run: |
-          GRADLEW=$(find project -type f -name "gradlew" | head -n 1)
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
 
-          if [ -z "$GRADLEW" ]; then
-            echo "ERROR: gradlew file not found inside keducore.zip"
-            exit 1
-          fi
-
-          PROJECT_DIR=$(dirname "$GRADLEW")
-
-          echo "PROJECT_DIR=$PROJECT_DIR" >> $GITHUB_ENV
-          echo "Found Gradle wrapper at: $GRADLEW"
-
-      - name: Grant execute permission
-        run: chmod +x "$PROJECT_DIR/gradlew"
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.13'
 
       - name: Build APK
         run: |
-          cd "$PROJECT_DIR"
-          ./gradlew assembleDebug
-
-      - name: Find APK
-        run: |
-          mkdir -p apk
-          find project -type f -name "*.apk" -exec cp {} apk/ \;
+          cd project
+          gradle assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: KEduCore-APK
-          path: apk/*.apk
+          path: project/**/build/outputs/apk/debug/*.apk
