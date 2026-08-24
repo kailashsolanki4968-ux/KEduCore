@@ -29,6 +29,18 @@ jobs:
         with:
           gradle-version: '9.3.1'
 
+      - name: Create debug keystore
+        run: |
+            keytool -genkeypair -v \
+            -keystore project/debug.keystore \
+            -alias androiddebugkey \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000 \
+            -storepass android \
+            -keypass android \
+            -dname "CN=Android Debug,O=Android,C=US"
+
       - name: Build APK
         run: |
           cd project
@@ -37,5 +49,5 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: KEduCore-APK
-          path: project/**/build/outputs/apk/debug/*.apk
+                name: KEduCore-APK
+                path: project/**/build/outputs/apk/debug/*.apk
