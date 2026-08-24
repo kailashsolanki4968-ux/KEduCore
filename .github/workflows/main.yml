@@ -20,23 +20,28 @@ jobs:
           distribution: temurin
           java-version: '17'
 
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
       - name: Extract KEduCore project
         run: |
           rm -rf project
           mkdir project
           unzip -q keducore.zip -d project
 
-      - name: Find and build APK
+      - name: Find Android project
         run: |
-          GRADLEW=$(find project -name gradlew -type f | head -n 1)
-          if [ -z "$GRADLEW" ]; then
-            echo "gradlew not found"
+          SETTINGS=$(find project -name settings.gradle -o -name settings.gradle.kts | head -n 1)
+          if [ -z "$SETTINGS" ]; then
+            echo "Android project files not found"
             exit 1
           fi
-          PROJECT_DIR=$(dirname "$GRADLEW")
-          cd "$PROJECT_DIR"
-          chmod +x gradlew
-          ./gradlew assembleDebug
+          PROJECT_DIR=$(dirname "$SETTINGS")
+          echo "PROJECT_DIR=$PROJECT_DIR" >> $GITHUB_ENV
+
+      - name: Build APK
+        run: |
+          gradle -p "$PROJECT_DIR" assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
