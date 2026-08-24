@@ -41,7 +41,15 @@ jobs:
 
       - name: Build APK
         run: |
-         "$PROJECT_DIR/gradlew" -p "$PROJECT_DIR" assembleDebug    
+         GRADLEW=$(find project -name gradlew -type f | head -n 1)
+         if [ -z "$GRADLEW" ]; then
+          echo "gradlew file not found"
+          exit 1
+         fi
+         chmod +x "$GRADLEW"
+         GRADLEW_DIR=$(dirname "$GRADLEW")
+         cd "$GRADLEW_DIR"
+         ./gradlew assembleDebug 
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
